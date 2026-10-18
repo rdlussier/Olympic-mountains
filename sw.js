@@ -1,6 +1,7 @@
-const A="app-v24",T="tiles-v1",F=["./","index.html","app.js","data.js","manifest.json","icon-192.png","icon-512.png","lib/leaflet.js","lib/leaflet.css","lib/images/marker-icon.png","lib/images/layers.png"];
-self.addEventListener("install",e=>{e.waitUntil(caches.open(A).then(c=>c.addAll(F)));self.skipWaiting()});
-self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!=A&&n!=T).map(n=>caches.delete(n)))));self.clients.claim()});
-self.addEventListener("fetch",e=>{const u=e.request.url;
- if(u.includes("tile.opentopomap.org")){const key=u.replace(/^https:\/\/[abc]\./,"https://a.");e.respondWith(caches.open(T).then(async c=>{const m=await c.match(key);if(m)return m;try{const r=await fetch(key,{mode:"no-cors"});c.put(key,r.clone());return r}catch(_){return Response.error()}}))}
- else if(u.startsWith(self.location.origin)&&e.request.method=="GET")e.respondWith(fetch(e.request,{cache:"no-cache"}).then(r=>{const c=r.clone();caches.open(A).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request,{ignoreSearch:true})))});
+const V=26,APP="hdl-app-"+V,TIL="hdl-tiles-v1",
+F=["./","index.html","app.js?v="+V,"data.js?v="+V,"water.json?v="+V,"elev.json?v="+V,"lib/leaflet.js","lib/leaflet.css","lib/images/marker-icon.png","lib/images/marker-icon-2x.png","lib/images/marker-shadow.png","lib/images/layers.png","lib/images/layers-2x.png","manifest.json","icon-180.png","icon-192.png"];
+self.addEventListener("install",e=>{e.waitUntil(caches.open(APP).then(c=>Promise.all(F.map(u=>c.add(u).catch(()=>0)))).then(()=>self.skipWaiting()))});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n.indexOf("hdl-app-")==0&&n!=APP).map(n=>caches.delete(n)))).then(()=>self.clients.claim()))});
+self.addEventListener("fetch",e=>{const q=e.request,u=q.url;if(q.method!="GET")return;
+ if(u.indexOf("tile.opentopomap.org")>-1){const key=u.replace(/^https:\/\/[abc]\./,"https://a.");e.respondWith(caches.open(TIL).then(async c=>{const m=await c.match(key);if(m)return m;try{const r=await fetch(key,{mode:"cors"});if(r.ok)c.put(key,r.clone());return r}catch(_){try{return await fetch(q)}catch(_){return Response.error()}}}));return}
+ if(u.indexOf(self.registration.scope)==0)e.respondWith(caches.open(APP).then(async c=>{const m=await c.match(q,{ignoreSearch:q.mode=="navigate"});const net=fetch(q).then(r=>{if(r.ok)c.put(q,r.clone());return r}).catch(()=>null);return m||(await net)||Response.error()}))});
