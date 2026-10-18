@@ -1,4 +1,4 @@
-const V=31,APP="hdl-app-"+V,TIL="hdl-tiles-v1",
+const V=32,APP="hdl-app-"+V,TIL="hdl-tiles-v1",
 F=["./","index.html","app.js?v="+V,"data.js?v="+V,"water.json?v="+V,"elev.json?v="+V,"lib/leaflet.js","lib/leaflet.css","lib/images/marker-icon.png","lib/images/marker-icon-2x.png","lib/images/marker-shadow.png","lib/images/layers.png","lib/images/layers-2x.png","manifest.json","icon-180.png","icon-192.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(APP).then(c=>Promise.all(F.map(u=>c.add(u).catch(()=>0)))).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n.indexOf("hdl-app-")==0&&n!=APP).map(n=>caches.delete(n)))).then(()=>self.clients.claim()))});
