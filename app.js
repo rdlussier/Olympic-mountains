@@ -1,4 +1,4 @@
-const VER=33;let EL=false,ELS="loading",ELE="";const $=s=>document.querySelector(s),f=n=>Math.round(n).toLocaleString("en");
+const VER=34;let EL=false,ELS="loading",ELE="";const $=s=>document.querySelector(s),f=n=>Math.round(n).toLocaleString("en");
 const IC={start:'<path d="M8 5v14l11-7z"/>',flag:'<path d="M5 3h2v18H5zM8 4h10l-2.5 4 2.5 4H8z"/>',tent:'<path d="M12 3L2 20h20L12 3zm0 7l5 8h-3.3L12 15.2 10.3 18H7l5-8z"/>',star:'<path d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.5l7.1-.6z"/>',drop:'<path d="M12 2.5c3.2 4.2 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 2.8-6.8 6-11z"/>',mtn:'<path d="M2 20l7-12 4 6.5 2.5-3.5L22 20z"/>',locate:'<path d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM11 1h2v4h-2zM11 19h2v4h-2zM1 11h4v2H1zM19 11h4v2h-4z"/><circle cx="12" cy="12" r="2"/>',route:'<path d="M3 18c3-9 6 4 9-4s6-3 9-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',up:'<path d="M12 4l7 8h-4.5v8h-5v-8H5z"/>',down:'<path d="M12 20l-7-8h4.5V4h5v8H19z"/>',clock:'<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3h2v5.4l3.5 2-1 1.7L11 13z"/>',dist:'<path d="M3 12l4-4v3h10V8l4 4-4 4v-3H7v3z"/>',layers:'<path d="M12 2L2 7l10 5 10-5-10-5zm0 12.5L4.5 10.8 2 12l10 5 10-5-2.5-1.2L12 14.5zm0 4L4.5 14.8 2 16l10 5 10-5-2.5-1.2L12 18.5z"/>',sun:'<circle cx="12" cy="12" r="4.5"/><path d="M11 1h2v3h-2zM11 20h2v3h-2zM1 11h3v2H1zM20 11h3v2h-3zM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4zM16.3 17.7l1.4-1.4 2.1 2.1-1.4 1.4zM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1zM16.3 6.3l2.1-2.1 1.4 1.4-2.1 2.1z"/>'};
 const ic=(n,s=16)=>`<svg class="ic" viewBox="0 0 24 24" width="${s}" height="${s}" fill="currentColor" fill-rule="evenodd" aria-hidden="true">${IC[n]}</svg>`,IK={s:"start",e:"flag",c:"tent",p:"star"};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])),hc=h=>{if(isNaN(h))return"–";const m=Math.round(h*60);return Math.floor(m/60)+"h"+String(m%60).padStart(2,"0")};
@@ -78,12 +78,11 @@ function wireProf(d){const sv=$("#body svg.pr");if(!sv)return;const q=P.filter(p
   if(!map.getBounds().contains(ll))map.panTo(ll)};
  sv.addEventListener("pointerdown",e=>{try{sv.setPointerCapture(e.pointerId)}catch(_){}mv(e)});sv.addEventListener("pointermove",mv)}
 // draggable panel
-const SNAP=[20,45,85],nearest=v=>SNAP.reduce((a,b)=>Math.abs(b-v)<Math.abs(a-v)?b:a);let sh=+localStorage.sheetH||45,dragging=false,moved=false;
-function setSh(v,anim){sh=v;document.documentElement.style.setProperty("--sh",v+"%");if(!anim)map.invalidateSize()}
-function snapTo(t){const h=document.documentElement;h.classList.add("snap");setSh(t,true);try{localStorage.sheetH=t}catch(_){}let n=0;const iv=setInterval(()=>{map.invalidateSize();if(++n>8){clearInterval(iv);h.classList.remove("snap")}},40)}
+let sh=+localStorage.sheetH||45,dragging=false,moved=false,raf=0;
+function setSh(v,anim){sh=v;document.documentElement.style.setProperty("--sh",v+"%");if(!anim&&!raf)raf=requestAnimationFrame(()=>{raf=0;map.invalidateSize()})}
 {const gb=$("#grab");gb.addEventListener("pointerdown",e=>{dragging=true;moved=false;try{gb.setPointerCapture(e.pointerId)}catch(_){}});
  gb.addEventListener("pointermove",e=>{if(!dragging)return;moved=true;setSh(Math.max(14,Math.min(90,(innerHeight-e.clientY)/innerHeight*100)),false)});
- const up=()=>{if(!dragging)return;dragging=false;snapTo(moved?nearest(sh):SNAP[(SNAP.indexOf(nearest(sh))+1)%SNAP.length])};gb.addEventListener("pointerup",up);gb.addEventListener("pointercancel",up);setSh(SNAP.includes(sh)?sh:45,false)}
+ const up=()=>{if(!dragging)return;dragging=false;map.invalidateSize();try{localStorage.sheetH=Math.round(sh*10)/10}catch(_){}};gb.addEventListener("pointerup",up);gb.addEventListener("pointercancel",up);setSh(sh>=14&&sh<=90?sh:45,false)}
 const SY={s:"▶",e:"⚑",c:"⛺",p:"★"},kd=(d,j)=>d.st[j][3],sp=q=>q[4]!=null?[q[4],q[5]]:near(q[0]);
 const today=()=>{const t=new Date();return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0")},sdv=()=>localStorage.sd||today();
 const MUL={r:1.4,n:1,f:.8};let cur=0,WP=[],lastLL=null,curKm=null,WST="loading…",WLIST=[];
