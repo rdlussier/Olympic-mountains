@@ -1,4 +1,5 @@
-const VER=34;let EL=false,ELS="loading",ELE="";const $=s=>document.querySelector(s),f=n=>Math.round(n).toLocaleString("en");
+const TRIP=window.TRIP,P=TRIP.route.map(r=>[r[0],r[1],0,r[2]]),D=TRIP.days.map(d=>({t:d.title,d:d.desc,a:d.from,b:d.to,st:d.stops,km:+(d.to-d.from).toFixed(1),up:0,dn:0})),S=TRIP.sidetrips.map(s=>({n:s.name,c:s.day-1,p:s.points}));
+const VER=35;let EL=false,ELS="loading",ELE="";const $=s=>document.querySelector(s),f=n=>Math.round(n).toLocaleString("en");
 const IC={start:'<path d="M8 5v14l11-7z"/>',flag:'<path d="M5 3h2v18H5zM8 4h10l-2.5 4 2.5 4H8z"/>',tent:'<path d="M12 3L2 20h20L12 3zm0 7l5 8h-3.3L12 15.2 10.3 18H7l5-8z"/>',star:'<path d="M12 2l2.9 6.9 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.5l7.1-.6z"/>',drop:'<path d="M12 2.5c3.2 4.2 6 7.6 6 11a6 6 0 0 1-12 0c0-3.4 2.8-6.8 6-11z"/>',mtn:'<path d="M2 20l7-12 4 6.5 2.5-3.5L22 20z"/>',locate:'<path d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM11 1h2v4h-2zM11 19h2v4h-2zM1 11h4v2H1zM19 11h4v2h-4z"/><circle cx="12" cy="12" r="2"/>',route:'<path d="M3 18c3-9 6 4 9-4s6-3 9-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',up:'<path d="M12 4l7 8h-4.5v8h-5v-8H5z"/>',down:'<path d="M12 20l-7-8h4.5V4h5v8H19z"/>',clock:'<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3h2v5.4l3.5 2-1 1.7L11 13z"/>',dist:'<path d="M3 12l4-4v3h10V8l4 4-4 4v-3H7v3z"/>',layers:'<path d="M12 2L2 7l10 5 10-5-10-5zm0 12.5L4.5 10.8 2 12l10 5 10-5-2.5-1.2L12 14.5zm0 4L4.5 14.8 2 16l10 5 10-5-2.5-1.2L12 18.5z"/>',sun:'<circle cx="12" cy="12" r="4.5"/><path d="M11 1h2v3h-2zM11 20h2v3h-2zM1 11h3v2H1zM20 11h3v2h-3zM4.2 5.6l1.4-1.4 2.1 2.1-1.4 1.4zM16.3 17.7l1.4-1.4 2.1 2.1-1.4 1.4zM4.2 18.4l2.1-2.1 1.4 1.4-2.1 2.1zM16.3 6.3l2.1-2.1 1.4 1.4-2.1 2.1z"/>'};
 const ic=(n,s=16)=>`<svg class="ic" viewBox="0 0 24 24" width="${s}" height="${s}" fill="currentColor" fill-rule="evenodd" aria-hidden="true">${IC[n]}</svg>`,IK={s:"start",e:"flag",c:"tent",p:"star"};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])),hc=h=>{if(isNaN(h))return"–";const m=Math.round(h*60);return Math.floor(m/60)+"h"+String(m%60).padStart(2,"0")};
@@ -15,10 +16,10 @@ function setBase(k){map.removeLayer(base);base=k=="sat"?sat:topo;base.addTo(map)
 $("#lay").innerHTML=ic("layers",22);$("#lay").onclick=e=>{e.stopPropagation();const m=$("#laymenu");m.style.display=m.style.display=="block"?"none":"block"};map.on("click",()=>{$("#laymenu").style.display="none"});document.querySelectorAll("#laymenu .opt").forEach(b=>{b.setAttribute("aria-checked",b.dataset.b==(base===sat?"sat":"topo"));b.onclick=()=>setBase(b.dataset.b)});
 const fly=(b,o)=>RM?map.fitBounds(b,o):map.flyToBounds(b,{...o,duration:.8}),goTo=(a,b)=>RM?map.setView([a,b],15):map.flyTo([a,b],15,{duration:.7});
 const rl=L.layerGroup().addTo(map),hll=L.layerGroup().addTo(map);
-L.polyline(seg(0,99),{color:"#0b2a12",weight:8,opacity:.85}).addTo(rl);
-const all=L.polyline(seg(0,99),{opacity:0,weight:0,interactive:false}).addTo(map);
-const DC=["#7CFC00","#ff3df2","#00e5ff","#ff8a00","#b388ff"];D.forEach((d,i)=>{d.c=DC[i];L.polyline(seg(d.a,i<D.length-1?d.b+.2:d.b),{color:d.c,weight:4,opacity:1}).addTo(rl)});
-S.forEach(s=>{L.polyline(s.p,{color:"#0b2a12",weight:6,opacity:.7,dashArray:"4 7",interactive:false}).addTo(rl);L.polyline(s.p,{color:DC[s.c],weight:3,opacity:1,dashArray:"4 7"}).bindTooltip(s.n,{sticky:true}).addTo(rl)});
+L.polyline(seg(0,1e9),{color:"#0b2a12",weight:8,opacity:.85}).addTo(rl);
+const all=L.polyline(seg(0,1e9),{opacity:0,weight:0,interactive:false}).addTo(map);
+const DC=["#7CFC00","#ff3df2","#00e5ff","#ff8a00","#b388ff"];D.forEach((d,i)=>{d.c=DC[i%DC.length];L.polyline(seg(d.a,i<D.length-1?d.b+.2:d.b),{color:d.c,weight:4,opacity:1}).addTo(rl)});
+S.forEach(s=>{L.polyline(s.p,{color:"#0b2a12",weight:6,opacity:.7,dashArray:"4 7",interactive:false}).addTo(rl);L.polyline(s.p,{color:DC[s.c%DC.length],weight:3,opacity:1,dashArray:"4 7"}).bindTooltip(s.n,{sticky:true}).addTo(rl)});
 const hl=L.layerGroup().addTo(map),water=L.layerGroup();
 map.fitBounds(all.getBounds(),{paddingTopLeft:[20,20],paddingBottomRight:[20,44]});
 function pickWater(els){const seen=new Set(),out=[];els.forEach(e=>{const g=e.geometry||(e.lat!=null?[{lat:e.lat,lon:e.lon}]:[]);let best=null;
@@ -36,13 +37,13 @@ async function getWater(q){let err;for(const u of EP){try{const r=await fetch(u,
 let wl=null;try{wl=JSON.parse(localStorage.waterOSM6||"null")}catch(_){}
 const getList=()=>getWater(q).then(j=>{const l=pickWater(j.elements);try{if(l.length)localStorage.waterOSM6=JSON.stringify(l)}catch(_){}return l});
 function setWst(t){WST=t;const e=$("#wst");if(e)e.textContent=t}
-fetch("water.json?v="+VER).then(r=>{if(!r.ok)throw 0;return r.json()}).then(l=>{if(!Array.isArray(l)||!l.length)throw 0;return l}).catch(()=>wl&&wl.length?wl:getList()).then(showWater).catch(e=>{const m=e&&e.message||e;setWst("could not load ("+m+")");toast("Couldn't load water spots ("+m+").",8000)});
+Promise.resolve(TRIP.water).then(l=>{if(!Array.isArray(l)||!l.length)throw 0;return l}).catch(()=>wl&&wl.length?wl:getList()).then(showWater).catch(e=>{const m=e&&e.message||e;setWst("could not load ("+m+")");toast("Couldn't load water spots ("+m+").",8000)});
 let lOn=true;$("#lns").onclick=()=>{lOn=!lOn;[rl,hll].forEach(g=>lOn?g.addTo(map):g.remove());$("#lns").style.opacity=lOn?1:.45};
 let wOn=false;$("#wtr").style.opacity=.45;$("#wtr").onclick=()=>{wOn=!wOn;wOn?water.addTo(map):water.remove();$("#wtr").style.opacity=wOn?1:.45};
 $("#loc").innerHTML=ic("locate",22);$("#wtr").innerHTML=ic("drop",20);$("#wtr").style.color="#1e88e5";$("#lns").innerHTML=ic("route",22);$("#elv").innerHTML=ic("mtn",14)+"–";
 function toast(t,ms){const e=$("#toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",ms||4000)}
 // compass (true north) and elevation
-const DECL=15;// approx. magnetic declination, degrees east, Olympic Peninsula
+const DECL=TRIP.declination||0;// magnetic declination in degrees east, set per trip
 const CARD=["N","NE","E","SE","S","SW","W","NW"];
 function setHd(h){const t=(h+DECL+360)%360;$("#dial").style.transform=`rotate(${-t}deg)`;$("#hd").textContent=Math.round(t)+"° "+CARD[Math.round(t/45)%8]}
 function onOri(e){let h;if(e.webkitCompassHeading!=null)h=e.webkitCompassHeading;else if(e.alpha!=null&&(e.absolute||e.type=="deviceorientationabsolute")){const r=Math.PI/180,a=e.alpha*r,b=e.beta*r,g=e.gamma*r,rA=-Math.cos(a)*Math.sin(g)-Math.sin(a)*Math.sin(b)*Math.cos(g),rB=-Math.sin(a)*Math.sin(g)+Math.cos(a)*Math.sin(b)*Math.cos(g);h=(Math.atan2(rA,rB)/r+360)%360;if(Math.abs(e.beta||0)<50&&Math.abs(e.gamma||0)<50)h=(360-e.alpha+360)%360}else return;setHd(h)}
@@ -92,7 +93,7 @@ D.forEach(d=>d.sc=1);
 const gain=(a,b,d)=>gainRaw(a,b)*d.sc,hrs=(a,b,d)=>EL?((b-a)/5+gain(a,b,d)/600)*MUL[localStorage.pace||"r"]:NaN;
 const hm=h=>{if(isNaN(h))return"–";const m=Math.round(h*60/5)*5;return Math.floor(m/60)+" h "+String(m%60).padStart(2,"0")+" m"};
 function sun(ms,lat,lon){const r=Math.PI/180,jd=ms/864e5+2440587.5,n=Math.ceil(jd-2451545+8e-4),Js=n-lon/360,M=(357.5291+.98560028*Js)%360,C=1.9148*Math.sin(M*r)+.02*Math.sin(2*M*r)+3e-4*Math.sin(3*M*r),lam=(M+C+180+102.9372)%360,Jt=2451545+Js+.0053*Math.sin(M*r)-.0069*Math.sin(2*lam*r),dl=Math.asin(Math.sin(lam*r)*Math.sin(23.4397*r)),w=Math.acos((Math.sin(-.833*r)-Math.sin(lat*r)*Math.sin(dl))/(Math.cos(lat*r)*Math.cos(dl)))/r/360;return[(Jt-w-2440587.5)*864e5,(Jt+w-2440587.5)*864e5]}
-function sunLine(i){const sd=sdv();const[a,b]=sun(Date.parse(sd)+(i-1)*864e5,P[0][0],P[0][1]),t=x=>new Date(x).toLocaleTimeString("en-US",{timeZone:"America/Los_Angeles",hour:"numeric",minute:"2-digit"});return`<p class="sun"><small>${ic("sun",14)} Sunrise ${t(a)} · Sunset ${t(b)} · ${hc((b-a)/36e5)} daylight</small></p>`}
+function sunLine(i){const sd=sdv();const[a,b]=sun(Date.parse(sd)+(i-1)*864e5,P[0][0],P[0][1]),t=x=>new Date(x).toLocaleTimeString("en-US",{timeZone:TRIP.timezone,hour:"numeric",minute:"2-digit"});return`<p class="sun"><small>${ic("sun",14)} Sunrise ${t(a)} · Sunset ${t(b)} · ${hc((b-a)/36e5)} daylight</small></p>`}
 function paintBars(){document.querySelectorAll(".pb").forEach(b=>{const a=+b.dataset.a,e=+b.dataset.b,fr=curKm==null?0:curKm>=e?1:curKm<=a?0:(curKm-a)/(e-a);b.firstChild.style.width=(fr*100).toFixed(1)+"%";const t=b.nextElementSibling;if(t&&t.classList.contains("pt"))t.textContent=curKm==null?"Not on the trail yet":fr>=1?"Done":fr<=0?"Not started":(curKm-a).toFixed(1)+" of "+(e-a).toFixed(1)+" km"})}
 const net=(r,d)=>{if(!EL)return"↑–";const n=Math.round(near(d.b)[2]-r.e);return(n<0?"↓":"↑")+f(Math.abs(n))+"m"};
 function updProg(ll){lastLL=ll;const r=routeElev(ll,curKm),el=$("#prg");curKm=r.d>100?null:r.km;paintBars();el.style.display="block";
@@ -108,7 +109,7 @@ const card=(d,j,clk)=>`<div class="dcard${clk?" clk":""}" ${clk?`onclick="show($
 const sum=k=>D.reduce((a,d)=>a+d[k],0);
 function show(i){cur=i;document.querySelectorAll("#tabs button").forEach((b,j)=>b.setAttribute("aria-selected",j==i));hl.clearLayers();hll.clearLayers();let h;
  if(!i){fly(all.getBounds(),{paddingTopLeft:[20,20],paddingBottomRight:[20,44]});
-  h=`<h2>High Divide and Appleton Pass Loop</h2><small>${D.length} days in the Olympic Mountains</small><div class="stats"><div><b>${P[P.length-1][3].toFixed(1)} km</b><span>distance</span></div><div><b>+${U(sum("up"))} m</b><span>gain</span></div><div><b>−${U(sum("dn"))} m</b><span>loss</span></div><div><b>${hm(D.reduce((a,d)=>a+hrs(d.a,d.b,d),0))}</b><span>est. time</span></div></div>`+D.map((d,j)=>card(d,j,true)).join("")}
+  h=`<h2>${esc(TRIP.name)}</h2><small>${D.length} days in the ${esc(TRIP.region)}</small><div class="stats"><div><b>${P[P.length-1][3].toFixed(1)} km</b><span>distance</span></div><div><b>+${U(sum("up"))} m</b><span>gain</span></div><div><b>−${U(sum("dn"))} m</b><span>loss</span></div><div><b>${hm(D.reduce((a,d)=>a+hrs(d.a,d.b,d),0))}</b><span>est. time</span></div></div>`+D.map((d,j)=>card(d,j,true)).join("")}
  else{const d=D[i-1];const line=L.polyline(seg(d.a,d.b),{color:"#ffffff",weight:10,opacity:.9}).addTo(hll);all.bringToFront();
   L.polyline(seg(d.a,d.b),{color:"#0b2a12",weight:8}).addTo(hll);L.polyline(seg(d.a,d.b),{color:d.c,weight:4}).addTo(hll);fly(line.getBounds(),{paddingTopLeft:[30,30],paddingBottomRight:[30,52]});
   d.st.forEach((q,j)=>{const p=sp(q);L.marker([p[0],p[1]],{icon:L.divIcon({className:"",html:`<div class="mk ${kd(d,j)}">${ic(IK[kd(d,j)],kd(d,j)=="s"||kd(d,j)=="e"?18:15)}</div>`,iconSize:[28,28]})}).bindPopup(`<b>${q[1]}</b><br>${q[2]}`).addTo(hl)});
@@ -121,18 +122,23 @@ function wx(i){const sd=$("#sd");sd.value=sdv();sd.onchange=()=>{localStorage.sd
  let c=null;try{c=JSON.parse(localStorage.wxc||"null")}catch(_){}if(c&&c.k!=key)c=null;
  if((s0-n)/864e5>15){show2(c?c.h:"<small>Too far ahead for a forecast. Check back within 16 days of the trip.</small>",c&&c.t);return}
  if(c&&Date.now()-c.t<3*36e5){show2(c.h,c.t);return}
- fetch(`https://api.open-meteo.com/v1/forecast?latitude=47.955&longitude=-123.835&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=auto&start_date=${sd.value}&end_date=${lastDay}`)
+ fetch(`https://api.open-meteo.com/v1/forecast?latitude=${TRIP.weather.lat}&longitude=${TRIP.weather.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=auto&start_date=${sd.value}&end_date=${lastDay}`)
  .then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>{const d=j.daily,h=d.time.map((t,k)=>`<p><b>Day ${k+1}</b> <small>${t}</small><br>High ${Math.round(d.temperature_2m_max[k])}°C, low ${Math.round(d.temperature_2m_min[k])}°C, rain ${d.precipitation_probability_max[k]}%, wind ${Math.round(d.wind_speed_10m_max[k])} km/h</p>`).join("");try{localStorage.wxc=JSON.stringify({k:key,t:Date.now(),h})}catch(_){}show2(h)})
  .catch(()=>show2(c?c.h:"<small>Weather needs an internet connection.</small>",c&&c.t))}
 // offline tiles
 const tx=(o,z)=>Math.floor((o+180)/360*2**z),ty=(a,z)=>{const r=a*Math.PI/180;return Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*2**z)};
-async function dl(){const b=all.getBounds().pad(.15),u=[],st=$("#dls"),btn=$("#dl");for(let z=11;z<=15;z++)for(let x=tx(b.getWest(),z);x<=tx(b.getEast(),z);x++)for(let y=ty(b.getNorth(),z);y<=ty(b.getSouth(),z);y++)u.push(`https://a.tile.opentopomap.org/${z}/${x}/${y}.png`);
+function tileList(O,z0,z1){const out=[],base="https://a.tile.opentopomap.org/";
+ if(O.mode=="corridor"){const km=O.bufferKm||2,step=Math.max(.2,km/2),set=new Set();let last=-1e9;
+  const add=p=>{const dy=km/111.32,dx=km/(111.32*Math.cos(p[0]*Math.PI/180));for(let z=z0;z<=z1;z++)for(let x=tx(p[1]-dx,z);x<=tx(p[1]+dx,z);x++)for(let y=ty(p[0]+dy,z);y<=ty(p[0]-dy,z);y++)set.add(z+"/"+x+"/"+y)};
+  P.forEach(p=>{if(p[3]-last>=step){last=p[3];add(p)}});add(P[P.length-1]);set.forEach(k=>out.push(base+k+".png"));return out}
+ const b=all.getBounds().pad(O.padding==null?.15:O.padding);for(let z=z0;z<=z1;z++)for(let x=tx(b.getWest(),z);x<=tx(b.getEast(),z);x++)for(let y=ty(b.getNorth(),z);y<=ty(b.getSouth(),z);y++)out.push(base+z+"/"+x+"/"+y+".png");return out}
+async function dl(){const O=TRIP.offline||{},z0=O.zoomMin||11,z1=O.zoomMax||15,u=tileList(O,z0,z1),st=$("#dls"),btn=$("#dl");
  if(!self.caches){st.textContent=" This browser cannot save the map.";return}
  btn.disabled=true;let ok=0,bad=0;try{const c=await caches.open("hdl-tiles-v1");for(let k=0;k<u.length;k+=4){await Promise.all(u.slice(k,k+4).map(async x=>{try{if(await c.match(x)){ok++;return}const r=await fetch(x,{mode:"cors"});if(r.ok){await c.put(x,r);ok++}else bad++}catch(_){bad++}}));st.textContent=` ${ok+bad} of ${u.length}`}}catch(e){bad=u.length-ok}
  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(_){}
- st.textContent=bad?` Saved ${ok} of ${u.length}, ${bad} failed. Tap again to retry.`:` Saved all ${u.length} tiles (zoom 11 to 15).`;btn.disabled=false}
+ st.textContent=bad?` Saved ${ok} of ${u.length}, ${bad} failed. Tap again to retry.`:` Saved all ${u.length} tiles (zoom ${z0} to ${z1}).`;btn.disabled=false}
 function saveElev(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([localStorage.elev6||"[]"],{type:"application/json"}));a.download="elev.json";a.click()}
-async function shareApp(){const url=location.href.split("?")[0].split("#")[0];try{if(navigator.share)await navigator.share({title:"High Divide Loop",text:"Trail app for our High Divide trip",url});else{await navigator.clipboard.writeText(url);toast("Link copied")}}catch(_){}}
+async function shareApp(){const url=location.href.split("?")[0].split("#")[0];try{if(navigator.share)await navigator.share({title:TRIP.name,text:"Trail app for our "+TRIP.short+" trip",url});else{await navigator.clipboard.writeText(url);toast("Link copied")}}catch(_){}}
 const installTip=()=>STANDALONE?"The app is installed on this device.":IOS?"On iPhone: tap Share, then Add to Home Screen. Do this before saving the map so Safari keeps it.":"On Android: open the browser menu, then tap Install app."
 function startTab(){const s=localStorage.sd;if(!s)return 0;const t=new Date(),ds=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`,k=Math.round((new Date(ds)-new Date(s))/864e5);return k>=0&&k<D.length?k+1:0}
 function calc(raw){P.forEach((p,i)=>{let t=0,n=0;for(let j=Math.max(0,i-3);j<=Math.min(P.length-1,i+3);j++){t+=raw[j];n++}p[2]=t/n});
@@ -149,7 +155,7 @@ async function getJ(u){const r=await fetch(u);if(!r.ok)throw new Error("HTTP "+r
 async function elevMeteo(){const raw=[];for(let i=0;i<P.length;i+=50){const s=P.slice(i,i+50),u=`https://api.open-meteo.com/v1/elevation?latitude=${s.map(p=>p[0]).join(",")}&longitude=${s.map(p=>p[1]).join(",")}`;let j;for(let t=0;;t++){try{j=await getJ(u);break}catch(e){if(t>=2)throw e;await wait(1500)}}if(!j.elevation||j.elevation.length!=s.length)throw new Error("bad data");raw.push(...j.elevation);await wait(250)}return raw}
 async function elevTopo(){const raw=[];for(let i=0;i<P.length;i+=100){const s=P.slice(i,i+100),j=await getJ("https://api.opentopodata.org/v1/srtm30m?locations="+s.map(p=>p[0]+","+p[1]).join("|"));if(!j.results||j.results.length!=s.length)throw new Error("bad data");raw.push(...j.results.map(x=>x.elevation));await wait(1100)}return raw}
 const FRESH=/[?&]fresh/.test(location.search);
-async function loadElev(){if(ELS=="busy")return;ELS="busy";let raw=null;if(!FRESH)try{const r=await fetch("elev.json?v="+VER);if(r.ok){const a=await r.json();if(Array.isArray(a)&&a.length==P.length)raw=a}}catch(_){}if(!raw&&!FRESH)try{raw=JSON.parse(localStorage.elev6||"null")}catch(_){}
+async function loadElev(){if(ELS=="busy")return;ELS="busy";let raw=null;if(!FRESH){const a=TRIP.elevation;if(Array.isArray(a)&&a.length==P.length)raw=a}if(!raw&&!FRESH)try{raw=JSON.parse(localStorage.elev6||"null")}catch(_){}
  if(!raw||raw.length!=P.length){let err="";raw=null;for(const f of[elevTiles,elevMeteo,elevTopo]){try{raw=await f();break}catch(e){err=e.message||String(e)}}
   if(!raw){ELS="fail";ELE=err;toast("Elevation could not load ("+err+").",8000);show(cur);return}
   raw=raw.map((v,i,a)=>v==null||isNaN(v)?(i?a[i-1]:0):v);try{localStorage.elev6=JSON.stringify(raw)}catch(_){}}
