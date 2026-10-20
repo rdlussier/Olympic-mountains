@@ -4,12 +4,10 @@ export default defineConfig({
   base: './',
   server: {
     host: '127.0.0.1',
-    port: 11100,
-    strictPort: true
+    port: 11100
   },
   preview: {
     host: '127.0.0.1',
-    port: 11101,
-    strictPort: true
+    port: 11101
   }
 })
