@@ -2,8 +2,13 @@
 <body style="font:16px system-ui;padding:16px;max-width:640px;margin:auto"><h2>App check</h2><pre id="o" style="white-space:pre-wrap"></pre>
 <button id="b" style="padding:10px 16px;font:inherit">Clear saved app data and open the app</button>
 <script>
-const o=document.getElementById("o"),log=t=>o.textContent+=t+"\n";
-(async()=>{for(const f of["index.html","app.js","trips/olympic/trip.json","lib/leaflet.js","lib/leaflet.css","sw.js"]){try{const r=await fetch(f+"?x="+Date.now(),{cache:"no-store"}),t=await r.text();log(f+": "+r.status+", "+t.length+" bytes"+(f=="app.js"?", version "+((t.match(/const VER=(\d+)/)||[])[1]||"?"):""))}catch(e){log(f+": FAILED ("+e.message+")")}}
+const o=document.getElementById("o"),log=t=>o.textContent+=t+"\n",bust=f=>f+(f.indexOf("?")<0?"?":"&")+"x="+Date.now()+"-"+Math.random().toString(36).slice(2),label=f=>f==="./"?"./ (scope root)":f;
+const check=async f=>{const r=await fetch(bust(f),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const n=(await r.arrayBuffer()).byteLength;log(label(f)+": "+r.status+", "+n+" bytes")};
+(async()=>{let files=[],checked=0,failed=[];
+try{const r=await fetch(bust("build.json"),{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const m=await r.json();log("Build "+(m.id||"?"));files=Array.isArray(m.files)?m.files:[]}catch(e){log("build.json: FAILED ("+e.message+")");failed.push("build.json")}
+for(const f of files){checked++;try{await check(f)}catch(e){failed.push(label(f));log(label(f)+": FAILED ("+e.message+")")}}
+checked++;try{await check("sw.js")}catch(e){failed.push("sw.js");log("sw.js: FAILED ("+e.message+")")}
+log("Checked "+checked+" files, "+failed.length+" failed"+(failed.length?" ("+failed.join(", ")+")":"")+" — "+(failed.length?"FAILED":"OK"));
 if(navigator.serviceWorker){log("service workers registered: "+(await navigator.serviceWorker.getRegistrations()).length)}
 if(self.caches)log("saved caches: "+((await caches.keys()).join(", ")||"none"));
 try{const r=await fetch("https://api.open-meteo.com/v1/elevation?latitude=47.95&longitude=-123.8");log("elevation service: "+r.status)}catch(e){log("elevation service: BLOCKED")}

@@ -7,14 +7,19 @@
     "build": "vite build",
     "preview": "vite preview",
     "fixtures:map": "node scripts/fetch-map-fixtures.mjs",
-    "test": "npm run test:unit && npm run test:e2e",
+    "check:build": "node scripts/check-build.mjs",
+    "test": "npm run test:unit && npm run test:e2e && npm run test:build",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:update": "playwright test --update-snapshots"
+    "test:e2e:update": "playwright test --update-snapshots",
+    "test:build": "npm run build && npm run check:build && playwright test --config playwright.build.config.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "vite": "^8.3.4",
     "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
   }
 }

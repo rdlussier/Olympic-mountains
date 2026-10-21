@@ -4,7 +4,6 @@ import path from 'node:path'
 
 const projectRoot = path.resolve(import.meta.dirname, '..', '..')
 const tileFixtureRoot = path.join(projectRoot, 'tests', 'fixtures', 'opentopomap')
-const appOrigin = 'http://127.0.0.1:11100'
 
 function dailyForecast(startDate, endDate) {
   const days = []
@@ -39,6 +38,7 @@ function dailyForecast(startDate, endDate) {
 }
 
 test('app shell and map render deterministically', async ({ page }, testInfo) => {
+  const appOrigin = new URL(testInfo.project.use.baseURL).origin
   const unexpectedRequests = []
   const missingTileFixtures = []
   const pageErrors = []
